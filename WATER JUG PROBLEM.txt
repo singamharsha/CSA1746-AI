@@ -1,0 +1,44 @@
+from collections import deque
+
+def water_jug_problem(capacity1, capacity2, target):
+    visited = set()
+    queue = deque([(0, 0)])  # Start with both jugs empty
+    steps = 0
+
+    while queue:
+        for _ in range(len(queue)):
+            jug1, jug2 = queue.popleft()
+            
+            if jug1 == target or jug2 == target:
+                return steps
+
+            # Possible states
+            states = [
+                (capacity1, jug2),  # Fill jug1
+                (jug1, capacity2),  # Fill jug2
+                (0, jug2),          # Empty jug1
+                (jug1, 0),          # Empty jug2
+                (min(capacity1, jug1 + jug2), jug2 - (min(capacity1, jug1 + jug2) - jug1)),  # Pour jug2 into jug1
+                (jug1 - (min(capacity2, jug1 + jug2) - jug2), min(capacity2, jug1 + jug2))  # Pour jug1 into jug2
+            ]
+
+            for state in states:
+                if state not in visited:
+                    visited.add(state)
+                    queue.append(state)
+        
+        steps += 1
+    
+    return -1  # Target amount is not achievable
+
+# Example usage
+capacity1 = 4
+capacity2 = 3
+target = 2
+
+result = water_jug_problem(capacity1, capacity2, target)
+if result != -1:
+    print(f"Minimum steps to measure {target} liters: {result}")
+else:
+    print(f"{target} liters is not measurable with the given jug capacities.")
+

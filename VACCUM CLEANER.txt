@@ -1,0 +1,66 @@
+import numpy as np
+
+class VacuumCleaner:
+    def __init__(self, grid):
+        self.grid = np.array(grid)
+        self.rows, self.cols = self.grid.shape
+        self.position = (0, 0)  # Starting position
+        self.cleaned = set()
+
+    def is_dirty(self, x, y):
+        return self.grid[x, y] == 1
+
+    def clean(self, x, y):
+        if self.is_dirty(x, y):
+            self.grid[x, y] = 0
+            self.cleaned.add((x, y))
+            print(f"Cleaned ({x}, {y})")
+
+    def move(self, direction):
+        x, y = self.position
+        if direction == 'up' and x > 0:
+            self.position = (x - 1, y)
+        elif direction == 'down' and x < self.rows - 1:
+            self.position = (x + 1, y)
+        elif direction == 'left' and y > 0:
+            self.position = (x, y - 1)
+        elif direction == 'right' and y < self.cols - 1:
+            self.position = (x, y + 1)
+        else:
+            return False
+        return True
+
+    def clean_all(self):
+        # Simple strategy: clean all dirty spots (use BFS or DFS to explore)
+        queue = [self.position]
+        visited = set()
+        while queue:
+            x, y = queue.pop(0)
+            if (x, y) not in visited:
+                visited.add((x, y))
+                self.clean(x, y)
+                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < self.rows and 0 <= ny < self.cols and (nx, ny) not in visited:
+                        if self.is_dirty(nx, ny) or (nx, ny) not in visited:
+                            queue.append((nx, ny))
+
+def print_grid(grid):
+    print("Grid:")
+    print("\n".join(" ".join(str(cell) for cell in row) for row in grid))
+
+# Example usage
+initial_grid = [
+    [1, 0, 1],
+    [0, 1, 0],
+    [1, 0, 1]
+]
+
+vacuum = VacuumCleaner(initial_grid)
+print("Initial state:")
+print_grid(vacuum.grid)
+
+vacuum.clean_all()
+
+print("\nFinal state:")
+print_grid(vacuum.grid)

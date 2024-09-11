@@ -1,0 +1,76 @@
+import numpy as np
+import heapq
+
+class PuzzleState:
+    def __init__(self, board, moves=0, prev=None):
+        self.board = board
+        self.moves = moves
+        self.prev = prev
+        self.empty_pos = np.argwhere(board == 0)[0]
+        self.priority = self.moves + self.manhattan()
+
+    def manhattan(self):
+        size = int(np.sqrt(len(self.board)))
+        goal = {num: divmod(num - 1, size) for num in range(1, size * size)}
+        goal[0] = (size - 1, size - 1)
+        return sum(abs(x - goal[tile][0]) + abs(y - goal[tile][1]) 
+                   for i, tile in enumerate(self.board) 
+                   if tile != 0 for x, y in [divmod(i, size)])
+
+    def neighbors(self):
+        size = int(np.sqrt(len(self.board)))
+        x, y = self.empty_pos
+        dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        result = []
+        for dx, dy in dirs:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < size and 0 <= ny < size:
+                new_board = np.copy(self.board)
+                new_board[x * size + y], new_board[nx * size + ny] = new_board[nx * size + ny], new_board[x * size + y]
+                result.append(PuzzleState(new_board, self.moves + 1, self))
+        return result
+
+    def __lt__(self, other):
+        return self.priority < other.priority
+
+def a_star(start, goal):
+    open_set = []
+    closed_set = set()
+    heapq.heappush(open_set, start)
+    while open_set:
+        current = heapq.heappop(open_set)
+        if np.array_equal(current.board, goal.board):
+            return current
+        closed_set.add(tuple(current.board))
+        for neighbor in current.neighbors():
+            if tuple(neighbor.board) in closed_set:
+                continue
+            if neighbor not in open_set:
+                heapq.heappush(open_set, neighbor)
+            else:
+                open_set.remove(neighbor)
+                heapq.heappush(open_set, neighbor)
+    return None
+
+def print_solution(state):
+    path = []
+    while state:
+        path.append(state.board.reshape(3, 3))
+        state = state.prev
+    for step in reversed(path):
+        print(step)
+        print()
+
+# Example usage
+start = np.array([1, 2, 3, 4, 5, 6, 7, 8, 0])
+goal = np.array([1, 2, 3, 4, 5, 6, 7, 8, 0])
+
+start_state = PuzzleState(start)
+goal_state = PuzzleState(goal)
+
+solution = a_star(start_state, goal_state)
+if solution:
+    print("Solution found:")
+    print_solution(solution)
+else:
+    print("No solution found.")

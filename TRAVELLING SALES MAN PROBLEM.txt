@@ -1,0 +1,33 @@
+from itertools import permutations
+
+def tsp(graph, start):
+    nodes = list(graph.keys())
+    nodes.remove(start)
+    min_path = float('inf')
+    best_route = None
+    
+    for perm in permutations(nodes):
+        current_path = 0
+        k = start
+        for j in perm:
+            current_path += graph[k][j]
+            k = j
+        current_path += graph[k][start]
+        
+        if current_path < min_path:
+            min_path = current_path
+            best_route = perm
+    
+    return min_path, (start,) + best_route + (start,)
+
+# Example usage
+graph = {
+    'A': {'A': 0, 'B': 10, 'C': 15, 'D': 20},
+    'B': {'A': 10, 'B': 0, 'C': 35, 'D': 25},
+    'C': {'A': 15, 'B': 35, 'C': 0, 'D': 30},
+    'D': {'A': 20, 'B': 25, 'C': 30, 'D': 0}
+}
+
+min_cost, best_route = tsp(graph, 'A')
+print(f"Minimum cost: {min_cost}")
+print(f"Best route: {' -> '.join(best_route)}")

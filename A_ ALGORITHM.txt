@@ -1,0 +1,39 @@
+import heapq
+
+def a_star(graph, start, goal, heuristic):
+    open_set = [(0, start, [start])]
+    heapq.heapify(open_set)
+    g_costs = {start: 0}
+    
+    while open_set:
+        _, current, path = heapq.heappop(open_set)
+        
+        if current == goal:
+            return path, g_costs[goal]
+        
+        for neighbor, cost in graph[current].items():
+            new_cost = g_costs[current] + cost
+            if neighbor not in g_costs or new_cost < g_costs[neighbor]:
+                g_costs[neighbor] = new_cost
+                f_cost = new_cost + heuristic(neighbor, goal)
+                heapq.heappush(open_set, (f_cost, neighbor, path + [neighbor]))
+    
+    return None, float('inf')
+
+def heuristic(node, goal):
+    return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+
+# Example usage
+graph = {
+    (0, 0): {(0, 1): 1, (1, 0): 1},
+    (0, 1): {(0, 0): 1, (1, 1): 1},
+    (1, 0): {(0, 0): 1, (1, 1): 1},
+    (1, 1): {(0, 1): 1, (1, 0): 1, (2, 2): 1},
+    (2, 2): {}
+}
+
+start = (0, 0)
+goal = (2, 2)
+path, cost = a_star(graph, start, goal, heuristic)
+print(f"Path: {path}")
+print(f"Cost: {cost}")
